@@ -16,13 +16,29 @@
   * destroy() // prototype method that returns: `${this.name} was removed from the game.`
 */
 
+function GameObject(attrs){
+  this.createdAt = attrs.createdAt;
+  this.name = attrs.name;
+  this.dimensions = attrs.dimensions;
+}
+GameObject.prototype.destroy = function(){
+  return `${this.name} was removed from the game`;
+} 
+
 /*
   === CharacterStats ===
   * healthPoints
   * takeDamage() // prototype method -> returns the string '<object name> took damage.'
   * should inherit destroy() from GameObject's prototype
 */
-
+function CharacterStats(attrs){
+  this.healthPoints = attrs.healthPoints;
+  GameObject.call(this, attrs);
+}
+CharacterStats.prototype = Object.create(GameObject.prototype);
+CharacterStats.prototype.takeDamage = function(){
+  return `${this.name} took damage`;
+}
 /*
   === Humanoid (Having an appearance or character resembling that of a human.) ===
   * team
@@ -32,7 +48,17 @@
   * should inherit destroy() from GameObject through CharacterStats
   * should inherit takeDamage() from CharacterStats
 */
- 
+function Humanoid(attrs){
+  this.team = attrs.team;
+  this.weapons = attrs.weapons;
+  this.language = attrs.language;
+  CharacterStats.call(this, attrs);
+}
+Humanoid.prototype = Object.create(CharacterStats.prototype);
+
+Humanoid.prototype.greet = function(){
+  return `${this.name} offers a greeting in ${this.language}`;
+}
 /*
   * Inheritance chain: GameObject -> CharacterStats -> Humanoid
   * Instances of Humanoid should have all of the same properties as CharacterStats and GameObject.
@@ -40,8 +66,6 @@
 */
 
 // Test you work by un-commenting these 3 objects and the list of console logs below:
-
-/*
   const mage = new Humanoid({
     createdAt: new Date(),
     dimensions: {
@@ -102,9 +126,80 @@
   console.log(archer.greet()); // Lilith offers a greeting in Elvish.
   console.log(mage.takeDamage()); // Bruce took damage.
   console.log(swordsman.destroy()); // Sir Mustachio was removed from the game.
-*/
 
   // Stretch task: 
   // * Create Villain and Hero constructor functions that inherit from the Humanoid constructor function.  
   // * Give the Hero and Villains different methods that could be used to remove health points from objects which could result in destruction if health gets to 0 or drops below 0;
   // * Create two new objects, one a villain and one a hero and fight it out with methods!
+
+function Villain(attrs){
+  Humanoid.call(this, attrs);
+}
+Villain.prototype = Object.create(Humanoid.prototype);
+Villain.prototype.Attack = function(object){
+  let damage = Math.floor((Math.random() * 5) + 1);
+  object.healthPoints = object.healthPoints - damage; 
+  console.log(`%c ${badman.name} has dealt ${damage}`, `color: white; background: black;`);
+}
+
+function Hero(attrs){
+  Humanoid.call(this, attrs);
+}
+Hero.prototype = Object.create(Humanoid.prototype);
+
+Hero.prototype.Attack = function(object){
+  let damage =  Math.floor((Math.random() * 4) + 1);
+  object.healthPoints = object.healthPoints - damage;
+  console.log(`%c ${bro.name} has dealt ${damage}`, `color: white; background: blue;`); 
+}
+
+const bro = new Hero({
+  createdAt: new Date(),
+  dimensions: {
+    length: 1,
+    width: 2,
+    height: 4,
+  },
+  healthPoints: 10,
+  name: 'Zizane',
+  team: 'The Bois',
+  weapons: [
+    'Sword',
+    'Shield',
+  ],
+  language: 'Bro Army',
+});
+
+const badman = new Villain({
+  createdAt: new Date(),
+  dimensions: {
+    length: 2,
+    width: 2,
+    height: 2,
+  },
+  healthPoints: 10,
+  name: 'Diavolo',
+  team: 'Mafia',
+  weapons: [
+    'King Crimson',
+    'Time Rift',
+  ],
+  language: 'Common Tongue',
+});
+
+while(bro.healthPoints > 0 && badman.healthPoints > 0){
+  bro.Attack(badman);
+  if(badman.healthPoints <= 0)
+    break;
+  badman.Attack(bro);
+}
+console.log(`${bro.name} has ${bro.healthPoints} HP left`);
+console.log(`${badman.name} has ${badman.healthPoints} HP left`);
+if(bro.healthPoints > 0){
+  console.log(badman.destroy());
+  console.log(`${bro.name} has won`);
+}
+else {
+  console.log(bro.destroy());
+  console.log(`${badman.name} has won`);
+}
